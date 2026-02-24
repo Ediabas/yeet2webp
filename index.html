@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Convert multiple PNG and JPG images to WebP instantly in your browser. Fast, free, and secure.">
+    <title>Yeet2WebP - Fast Image Converter</title>
+    <style>
+        /* TikTok/Gamer Neon Dark Theme */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: #ffffff; text-align: center; padding: 50px; margin: 0; }
+        h1 { font-size: 3.5rem; margin-bottom: 10px; text-transform: uppercase; font-weight: 900; letter-spacing: 2px; text-shadow: 2px 2px 0px #ff0050, -2px -2px 0px #00f2fe; }
+        .subtitle { color: #aaaaaa; margin-bottom: 40px; font-size: 1.2rem; }
+        
+        /* Main Dropzone */
+        #dropzone { border: 4px dashed #ff0050; border-radius: 20px; padding: 80px 20px; transition: all 0.3s ease; cursor: pointer; background-color: #1e1e1e; max-width: 800px; margin: 0 auto; }
+        #dropzone:hover { background-color: #2a2a2a; border-color: #00f2fe; }
+        #dropzone.dragover { background-color: #ff0050; color: #fff; border-color: #ffffff; transform: scale(1.02); }
+        #dropzone h2 { font-size: 2.2rem; margin: 0; pointer-events: none; }
+        
+        /* Output Area */
+        #output { margin-top: 40px; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; max-width: 1000px; margin-left: auto; margin-right: auto; }
+        .result-card { background: #2a2a2a; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .result-card img { max-width: 200px; border-radius: 8px; margin-bottom: 15px; display: block; }
+        
+        button { background: linear-gradient(45deg, #00f2fe, #4facfe); border: none; padding: 12px 25px; font-weight: bold; border-radius: 8px; cursor: pointer; color: #000; font-size: 1rem; transition: transform 0.2s; }
+        button:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4); }
+    </style>
+</head>
+<body>
+    <div id="dropzone">
+        <h2>YEET YOUR IMAGES HERE! 🚀</h2>
+        <p style="color:#cccccc; pointer-events:none; font-size: 1.1rem; margin-top: 20px; font-weight: 500;">
+            Convert multiple PNG / JPG images at once
+        </p>
+        <p style="color:#777777; pointer-events:none; margin-top: 5px;">
+            (or click to browse files)
+        </p>
+        <input type="file" id="fileInput" multiple accept="image/png, image/jpeg, image/jpg" style="display: none;">
+    </div>
+
+    <div id="output"></div>
+
+    <script>
+        // Core Logic: Client-side Instant Conversion
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const output = document.getElementById('output');
+
+        // Click Event
+        dropzone.addEventListener('click', () => fileInput.click());
+
+        // Drag & Drop Events
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        // File Input Event
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (!file.type.match('image.*')) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+
+                        const webpUrl = canvas.toDataURL('image/webp', 0.8);
+
+                        const card = document.createElement('div');
+                        card.className = 'result-card';
+                        
+                        const originalName = file.name.split('.')[0];
+                        const newFileName = originalName + '.webp';
+
+                        card.innerHTML = `
+                            <img src="${webpUrl}" alt="Converted to WebP">
+                            <a href="${webpUrl}" download="${newFileName}">
+                                <button>Download .webp</button>
+                            </a>
+                        `;
+                        output.prepend(card);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    </script>
+</body>
+</html>
